@@ -8,33 +8,28 @@ seed = 4
 
 
 
-def high_level_cleaning(df, bad_features, target_col):
-    model_data = df[df.columns.difference(bad_features)].dropna(axis=0, subset=[target_col])
-    no_missing_target = model_data.loc[model_data[target].isna()]
+def split_data(df, target_col):
+    no_missing_target = df.loc[df[target].isna()]
     target = no_missing_target[target_col]
-    features = model_data2.drop([target_col], axis =1)
-    return(features, target)
+    features = no_missing_target.drop([target_col], axis =1)
+    feature_model, feature_holdout, target_model, target_holdout = train_test_split(features, target, test_size=0.1, random_state=seed)
+    return(feature_model, feature_holdout, target_model, target_holdout)
 
-#So I realized that I might want to run multiple data sets, I'm just going to make this into a function
-def xg_boost_model(df, target_col, bad_features, max_tree_depth, test_size =0.25, seed = 42):
-    #remove bad features and drop rows with a null target
-    model_data = df[df.columns.difference(bad_features)].dropna(axis=0, subset=[target_col])
-    #we also want to remove any targets that have  LTV of 0. LTV=0 doesn't make any sense since we're giving them loans
-    model_data2 = model_data.loc[model_data['LTV']>0]
+
+from sklearn.model_selection import cross_val_score
+def cv_model(features, target, model, kfolds = 5):
     
-    #split dataframe in to target and features
-    target = model_data2[target_col]
-    features = model_data2.drop([target_col], axis =1)
-    #remove whitespace from feature names. Whitespace breaks xgboost for some reason
-    features.columns = [c.replace(' ', '_') for c in features.columns]
-    
+    #features.columns = [c.replace(' ', '_') for c in features.columns]
+    scores = cross_val_score(model, features, target, cv=kfolds)
     
     feature_train, feature_test, target_train, target_test = train_test_split(features, target, test_size, random_state=seed)
     
     #build the model
     model = XGBRegressor(max_depth=max_tree_depth)
     model.fit(feature_train, target_train)
-    
+    return(model)
+
+
     #make prediction
     target_pred = model.predict(feature_test)
     #get model scores
