@@ -15,6 +15,8 @@ class TypeSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         assert isinstance(X, pd.DataFrame)
         return X.select_dtypes(include=[self.dtype])
+    def get_feature_names(self):
+        return X.columns.tolist()
 
 #remove missing values from categorical vars
 class StringIndexer(BaseEstimator, TransformerMixin):
@@ -25,6 +27,8 @@ class StringIndexer(BaseEstimator, TransformerMixin):
         return X.apply(lambda s: s.cat.codes.replace(
             {-1: len(s.cat.categories)}
         ))
+    def get_feature_names(self):
+        return X.columns.tolist()
     
     
 preprocessing_transformer = Pipeline([
