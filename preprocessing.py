@@ -5,6 +5,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
 #create generic type selector to split dataframes by type
+
+## Note: need to implement coloumn names in custom transformers
 class TypeSelector(BaseEstimator, TransformerMixin):
     def __init__(self, dtype):
         self.dtype = dtype
@@ -25,7 +27,7 @@ class StringIndexer(BaseEstimator, TransformerMixin):
         ))
     
     
-transformer = Pipeline([
+preprocessing_transformer = Pipeline([
     ('features', FeatureUnion(n_jobs=1, transformer_list=[
         # Part 1
         ('boolean', Pipeline([
